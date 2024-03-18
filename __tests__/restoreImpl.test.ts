@@ -162,6 +162,19 @@ test("restore with no key", async () => {
     );
 });
 
+test("restore failure with earlyExit should call process exit", async () => {
+    testUtils.setInput(Inputs.Path, "node_modules");
+    const failedMock = jest.spyOn(core, "setFailed");
+    const restoreCacheMock = jest.spyOn(cache, "restoreCache");
+    const processExitMock = jest.spyOn(process, "exit").mockImplementation();
+    await restoreImpl(new StateProvider(), true);
+    expect(restoreCacheMock).toHaveBeenCalledTimes(0);
+    expect(failedMock).toHaveBeenCalledWith(
+        "Input required and not supplied: key"
+    );
+    expect(processExitMock).toHaveBeenCalledWith(1);
+});
+
 test("restore with too many keys should fail", async () => {
     const path = "node_modules";
     const key = "node-test";
